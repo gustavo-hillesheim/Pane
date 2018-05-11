@@ -1,8 +1,5 @@
 package pane;
 
-import java.awt.Color;
-import java.awt.Font;
-
 import javax.swing.*;
 
 /*
@@ -11,6 +8,8 @@ import javax.swing.*;
 
 public class MultiInputPane extends Pane {
 
+	private static final long serialVersionUID = 1L;
+	
 	//Variáveis internas
 	private static SmartField[] edits;
 	
@@ -32,63 +31,8 @@ public class MultiInputPane extends Pane {
 			//Obtendo caracteres permitidos
 			String caracteresPermitidos = "";
 			
-			//Obtendo mínimo e máximo para o TextField
-			double min = Pane.DOUBLE_MIN, max = Pane.DOUBLE_MAX;
+			iniciarEdit(i, inputs);
 			
-			switch (inputs[i][1].toString().toUpperCase()) {
-			
-				case "INT": {
-					
-					//Verificando se foi passado mínimo e máximo para esse edit
-					if (inputs[i].length > 2) {
-						
-						//Atribuindo valores
-						min = (double) (Integer) inputs[i][2];
-						max = (double) (Integer) inputs[i][3];
-						
-						//Iniciando edit com valores personalizados
-						edits[i] = new SmartField(false, min, max);
-					} else {
-					
-						//Iniciando edit padrão
-						edits[i] = new SmartField(false);
-					}
-					break;
-				}
-				
-				case "DOUBLE": {
-					
-					//Verificando se foi passado mínimo e máximo para esse edit
-					if (inputs[i].length > 2) {
-						
-						//Atribuindo valores
-						min = (double) (Integer) inputs[i][2];
-						max = (double) (Integer) inputs[i][3];
-						
-						//Iniciando edit com limites personalizados
-						edits[i] = new SmartField(true, min, max);
-					} else {
-						
-						//Iniciando edit padrão
-						edits[i] = new SmartField(true);
-					}
-					break;
-				}
-				
-				case "STRING": {
-					
-					//Verificando se foi passado uma parâmetro extra
-					if (inputs[i].length > 2) {
-						
-						//Iniciando edit com caracteres permitidos personalizados
-						edits[i] = new SmartField(inputs[i][0].toString(), inputs[i][2].toString());
-					} else {
-						
-						//Inciando edit padrão
-						edits[i] = new SmartField(inputs[i][0].toString());
-					}
-				}
-			}
 			SmartField edit = edits[i];
 
 			//Configurando posição do texto
@@ -114,6 +58,7 @@ public class MultiInputPane extends Pane {
 		setVisible(true);
 	}
 	
+	//Métodos
 	public void desenharPlaceholders() {
 		
 		for (SmartField edit : edits) {
@@ -122,9 +67,6 @@ public class MultiInputPane extends Pane {
 	}
 	
 	public static Object[] input(String titulo, String texto, Object[][]inputs, int width) {
-		
-		//Vetor que será retornado
-		Object[] vetor = new Object[inputs.length];
 
 		//Cria uma janela de acordo com as configurações específicadas
 		MultiInputPane pane = new MultiInputPane(titulo, texto, inputs, width);
@@ -134,8 +76,19 @@ public class MultiInputPane extends Pane {
 			Thread.sleep(100);
 		} catch(Exception e) {}
 		
+		Object[] vetor = coletarDados(pane, inputs.length, inputs);
+		
 		//Desenhando placeholders
 		pane.desenharPlaceholders();
+		
+		//Retorna o vetor
+		return vetor;
+	}
+	
+	private static Object[] coletarDados(MultiInputPane pane, int length, Object[][] inputs) {
+		
+		//Vetor que será retornado
+		Object[] vetor = new Object[length];
 		
 		//Laço para verificar se nenhum edit ficou vazio
 		boolean algoVazio = true;
@@ -149,53 +102,96 @@ public class MultiInputPane extends Pane {
 			esperaTerminar(pane);
 			
 			//Coleta as informações inseridas
-			for (int i = 0; i < vetor.length; i++) {
+			for (int i = 0; i < length; i++) {
 				
 				//Variável que recebe a informação no edit
 				String text = edits[i].getText();
 				
-				//Reseta cores do edit
-				edits[i].setBorder(BorderFactory.createLineBorder(Color.GRAY));
-				edits[i].setBackground(Color.WHITE);
-				edits[i].setForeground(Color.BLACK);
+				algoVazio = verificarEdit(text, edits[i]);
 				
-				//Verifica se o campo está vazio
-				if (text.isEmpty()) {
-					
-					//Define a cor da borda como vermelho
-					edits[i].setBorder(BorderFactory.createLineBorder(Color.RED));
-					
-					//Define a cor do fundo como vermelho
-					edits[i].setBackground(Color.decode("#ffb3b3"));
-					
-					//Define a cor do texto como vermelho
-					edits[i].setForeground(Color.RED);
-					
-					algoVazio = true;
-				}
+				vetor[i] = retornarValor(text, inputs[i][1].toString());
 				
-				//Verificando se é necessário converter
-				switch (inputs[i][1].toString().toUpperCase()) {
-				
-					//Caso não precise apenas seta a variável como string
-					case "STRING":
-						vetor[i] = text;
-						break;
-					
-					//Converte para integer caso necessário
-					case "INT":
-						vetor[i] = Integer.parseInt(text);
-						break;
-					
-					//Converte para double caso necessário
-					case "DOUBLE":
-						vetor[i] = Double.parseDouble(text);
-						break;
-				}
 			}
 		}
 		
-		//Retorna o vetor
 		return vetor;
+	}
+	
+	private static Object retornarValor(String text, String tipo) {
+		
+		//Verificando se é necessário converter
+		switch (tipo) {
+		
+			//Caso não precise apenas retorna um string
+			case "STRING":
+				return text;
+			
+			//Retorna Integer caso necessário
+			case "INT":
+				return Integer.parseInt(text);
+			
+			//Retorna Double caso necessário
+			case "DOUBLE":
+				return Double.parseDouble(text);
+		}
+		
+		//Caso não seja de nenhum tipo aceito retorna nulo
+		return null;
+	}
+
+	private static boolean verificarEdit(String text, SmartField edit) {
+		
+		edit.resetCores();
+		
+		//Verifica se o campo está vazio
+		if (text.isEmpty()) {
+			
+			edit.sinalizarErro();
+			return true;
+		}
+		
+		return false;
+	}
+
+	private static void iniciarEdit(int i, Object[][] inputs) {
+		
+		//Verificando tipo
+		switch (inputs[i][1].toString().toUpperCase()) {
+			
+			case "STRING": {
+				
+				//Verificando se foi passado uma parâmetro extra
+				if (inputs[i].length > 2) {
+					
+					//Iniciando edit com caracteres permitidos personalizados
+					edits[i] = new SmartField(inputs[i][0].toString(), inputs[i][2].toString());
+				} else {
+					
+					//Inciando edit padrão
+					edits[i] = new SmartField(inputs[i][0].toString());
+				}
+			}
+			
+			default: {
+				
+				boolean decimal = inputs[i][1].toString().equals("DOUBLE") ? true : false;
+				
+				//Verificando se foi passado mínimo e máximo para esse edit
+				if (inputs[i].length > 2) {
+					
+					//Atribuindo valores
+					double min = (double) inputs[i][2];
+					double max = (double) inputs[i][3];
+					
+					//Iniciando edit com limites personalizados
+					edits[i] = new SmartField(decimal, min, max);
+				} else {
+					
+					//Iniciando edit padrão
+					edits[i] = new SmartField(decimal);
+				}
+				break;
+			}
+		}
 	}
 }

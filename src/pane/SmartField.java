@@ -7,11 +7,8 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JTextField;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.basic.BasicTextFieldUI;
 
 /*
  * Essa Classe é utilizada para ter um controle maior sobre o que o usuário informa na janela de diálogo
@@ -19,6 +16,7 @@ import javax.swing.plaf.basic.BasicTextFieldUI;
 
 public class SmartField extends JTextField {
 	
+	private static final long serialVersionUID = 1L;
 	private String caracteresPermitidos, placeholder, tipo;
 	private double min, max;
 	
@@ -80,21 +78,17 @@ public class SmartField extends JTextField {
 	@Override
 	protected void processKeyEvent(KeyEvent e) {
 		
+		atualizarListeners(e);
+		
+		char key = e.getKeyChar();
+		
 		//Definindo qual tipo de evento foi acionado
 		switch (e.getID()) {
 			
 			case KeyEvent.KEY_TYPED: {	
 				
-				//Obtendo lista de key listeners
-				KeyListener[] listeners = getKeyListeners();
-				
-				//Passando evento para os key listeners
-				for (KeyListener listener : listeners) {
-					listener.keyTyped(e);
-				}
-				
 				//Verificando qual tecla foi digitada
-				if (e.getKeyChar() == KeyEvent.VK_BACK_SPACE) {
+				if (key == KeyEvent.VK_BACK_SPACE) {
 					
 					//Limpa a última casa do texto caso necessário
 					if (getText().length() > 0) {
@@ -103,107 +97,19 @@ public class SmartField extends JTextField {
 					
 				//Adiciona o caractere ao TextField caso esteja na lista de caracteres permitidos
 				//Caso a lista esteja vazia, o método entende que podem ser colocadas quaisquer caracteres
-				} else if (caracteresPermitidos.contains(String.valueOf(e.getKeyChar())) || (caracteresPermitidos.isEmpty())) {
+				} else {
 				
-					//Verificando se o tipo do TextField é numérico
+					//Verificando tipo do TextField
 					if (!tipo.equals("STRING")) {
 						
-						//Verificando se o campo está preenchido com um 0
-						if (getText().equals("0")) {
-							
-							//Limpa o campo
-							setText("");
-						}
+						processarTiposNumericos(String.valueOf(e.getKeyChar()));
 						
-						//Verificando se o caractere é um número
-						if ("0123456789".contains(String.valueOf(e.getKeyChar()))) {
-							setText(getText() + e.getKeyChar());
-						} else {
-							
-							//Verificando se o símbolo já está no TextField
-							if (!getText().contains(String.valueOf(e.getKeyChar()))) {
-								
-								//Verificando se o símbolo é o sinal de menos
-								if (e.getKeyChar() == KeyEvent.VK_MINUS) {
-									
-									//Verificando o TextField está vazio
-									if (getText().length() == 0) {
-										
-										setText(getText() + e.getKeyChar());
-									}
-								} else {
-									
-									setText(getText() + e.getKeyChar());
-								}
-							}
-						}
 					} else {
-						setText(getText() + e.getKeyChar());
-					}
-					
-					//Verificando se a caixa de diálogo deve apenas receber valores do tipo inteiro ou real
-					switch (tipo.toUpperCase()) {
 						
-						case "INT": {
+						//Verificando se o caractere é permitido
+						if ((caracteresPermitidos.contains(String.valueOf(key))) || (caracteresPermitidos.equals(""))) {
 							
-							//Verificando se é possível converter o valor no TextField para integer
-							try {
-								int n = Integer.parseInt(getText());
-								
-								//Verifica se o número está abaixo do mínimo aceito
-								if (n < min) {
-									
-									//Troca o conteúdo para o mínimo aceito
-									setText(String.valueOf((int)min));
-								}
-								
-								//Verifica se o número está acima do máximo aceito
-								if (n > max) {
-									
-									//Troca o conteúdo para o máximo aceito
-									setText(String.valueOf((int)max));
-								}
-							} catch(Exception ex) {
-								
-								//Verifica se o caractere é -
-								if (e.getKeyChar() != KeyEvent.VK_MINUS) {
-									
-									//Caso não seja possível converter o número o campo é preenchido com 0
-									setText("0");
-								}						
-							}
-							break;
-						}
-						case "DOUBLE": {
-							
-							//Verificando se é possível converter o valor no TextField para double
-							try {
-								double n = Double.parseDouble(getText());
-								
-								//Verifica se o número está abaixo do mínimo aceito
-								if (n < min) {
-									
-									//Troca o conteúdo para o mínimo aceito
-									setText(String.valueOf(min));
-								}
-								
-								//Verifica se o número está acima do máximo aceito
-								if (n > max) {
-									
-									//Troca o conteúdo para o máximo aceito
-									setText(String.valueOf(max));
-								}
-							} catch(Exception ex) {
-								
-								//Verifica se o caractere é -
-								if (e.getKeyChar() != KeyEvent.VK_MINUS) {
-									
-									//Caso não seja possível converter o número o campo é preenchido com 0
-									setText("0");
-								}
-							}
-							
-							break;
+							setText(getText() + key);
 						}
 					}
 				}
@@ -214,31 +120,11 @@ public class SmartField extends JTextField {
 					desenharPlaceholder();
 				}
 			}
-			
-			case KeyEvent.KEY_PRESSED: {
-				
-				//Obtendo lista de key listeners
-				KeyListener[] listeners = getKeyListeners();
-				
-				//Passando evento para os key listeners
-				for (KeyListener listener : listeners) {
-					listener.keyPressed(e);
-				}
-			}
-			
-			case KeyEvent.KEY_RELEASED: {
-				
-				//Obtendo lista de key listeners
-				KeyListener[] listeners = getKeyListeners();
-				
-				//Passando evento para os key listeners
-				for (KeyListener listener : listeners) {
-					listener.keyReleased(e);
-				}
-			}
 		}
 	}
 	
+	//Métodos
+	//Aparência
 	public void desenharPlaceholder() {
 		
 		//Verifica se o placeholder existe
@@ -265,5 +151,167 @@ public class SmartField extends JTextField {
 		//Desenha o placeholder
 		g.setColor(Color.GRAY);
 		g.drawString(placeholder, x, y);
+	}
+
+	public void sinalizarErro() {
+		
+		//Define a cor da borda como vermelho
+		setBorder(BorderFactory.createLineBorder(Color.RED));
+		
+		//Define a cor do fundo como vermelho
+		setBackground(Color.decode("#ffb3b3"));
+		
+		//Define a cor do texto como vermelho
+		setForeground(Color.RED);
+	}
+
+	public void resetCores() {
+		
+		//Reseta cor da borda
+		setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		
+		//Reseta cor do fundo
+		setBackground(Color.WHITE);
+		
+		//Reseta cor do texto
+		setForeground(Color.BLACK);
+	}
+
+	//Funcionalidade
+	private void atualizarListeners(KeyEvent e) {
+		
+		//Obtendo lista de keyListeners
+		KeyListener[] listeners = getKeyListeners();
+		
+		for (KeyListener listener : listeners) {
+			
+			switch(e.getID()) {
+			
+				case KeyEvent.KEY_PRESSED: {
+					
+					listener.keyPressed(e);
+					break;
+				}
+				case KeyEvent.KEY_TYPED: {
+					
+					listener.keyTyped(e);
+					break;
+				}
+				
+				case KeyEvent.KEY_RELEASED: {
+					
+					listener.keyReleased(e);
+					break;
+				}
+			}
+		}
+	}
+
+	private void processarTiposNumericos(String key) {
+		
+		//Verificando se o campo está preenchido com um 0
+		if (getText().equals("0")) {
+			
+			//Limpa o campo
+			setText("");
+		}
+		
+		//Verificando se o caractere é um número
+		if ("0123456789".contains(key)) {
+			setText(getText() + key);
+		} else {
+			
+			//Verificando se o símbolo já está no TextField
+			if (!getText().contains(key)) {
+				
+				//Verificando se o símbolo é o sinal de menos
+				if (key.charAt(0) == KeyEvent.VK_MINUS) {
+					
+					//Verificando o TextField está vazio
+					if (getText().length() == 0) {
+						
+						setText(getText() + key);
+					}
+				} else {
+					
+					setText(getText() + key);
+				}
+			}
+		}
+		
+		clampNumericos(key);
+	}
+	
+	private void clampNumericos(String key) {
+		
+		//Tenta clampar o valor inserido
+		try {
+			
+			if (tipo.equals("DOUBLE")) {
+				clampDouble();
+			} else {
+				clampInt();
+			}
+			
+		} catch (Exception ex) {
+			
+			//Define símbolos permitidos
+			String simbolosPermitidos = tipo.equals("DOUBLE") ? "-." : "-";
+			
+			//Verifica se o caractere inserido não está nos símbolos permitidos
+			if (!simbolosPermitidos.contains(key)) {
+				setText("0");
+			}
+			
+		}
+	}
+	
+	private void clampInt() {
+		
+		int n = Integer.parseInt(getText());
+		
+		//Verifica se o número está abaixo do mínimo aceito
+		if (n < min) {
+			
+			//Troca o conteúdo para o mínimo aceito
+			setText(String.valueOf((int)min));
+		}
+		
+		//Verifica se o número está acima do máximo aceito
+		if (n > max) {
+			
+			//Troca o conteúdo para o máximo aceito
+			setText(String.valueOf((int)max));
+		}
+	}
+
+	private void clampDouble() {
+		
+		double n = Double.parseDouble(getText());
+		
+		//Verifica se o número está abaixo do mínimo aceito
+		if (n < min) {
+			
+			//Troca o conteúdo para o mínimo aceito
+			setText(String.valueOf(min));
+		}
+		
+		//Verifica se o número está acima do máximo aceito
+		if (n > max) {
+			
+			//Troca o conteúdo para o máximo aceito
+			setText(String.valueOf(max));
+		}
+	}
+	
+	//Getters
+	public double getDoubleText() {
+		
+		return Double.parseDouble(getText());
+	}
+	
+	public int getIntText() {
+		
+		return Integer.parseInt(getText());
 	}
 }

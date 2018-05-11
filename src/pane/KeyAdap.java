@@ -3,8 +3,6 @@ package pane;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JTextField;
-
 /*
  * Essa classe é utilizada nos campos de texto das InputPanes para que quando o usuário tecle a tecla Enter o programa entenda que ele terminou de preencher o campo
  */

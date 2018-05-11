@@ -12,6 +12,8 @@ import javax.swing.JButton;
 
 public class FinishButton extends JButton {
 
+	private static final long serialVersionUID = 1L;
+
 	public FinishButton(Pane pane, int paneWidth, int top) {
 		// Seta o texto do botão
 		setText("OK");
