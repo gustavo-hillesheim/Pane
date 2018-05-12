@@ -20,42 +20,11 @@ public class MultiInputPane extends Pane {
 		super(titulo, texto, width);
 
 		// Re-setando variável width
-		width = getBounds().width;
+		width = (int) getBounds().getWidth();
 
-		// Iniciando array
-		edits = new SmartField[inputs.length];
+		adicionarEdits(this, inputs);
 
-		//Adicionando edits à janela
-		for (int i = 0; i < inputs.length; i++) {
-
-			//Obtendo caracteres permitidos
-			String caracteresPermitidos = "";
-			
-			iniciarEdit(i, inputs);
-			
-			SmartField edit = edits[i];
-
-			//Configurando posição do texto
-			edit.setHorizontalAlignment(SwingConstants.CENTER);
-			
-			//Arrumando posição e tamanho do edit
-			edit.setBounds(50, 35 * (i + 1) + lblHeight, width - 100, 25);
-
-			//Adicionando edit à janela
-			add(edit);
-		}
-
-		//Adicionando botão para finalizar
-		add(new FinishButton(this, width, 35 * (inputs.length + 1) + lblHeight));
-		
-		//Arrumando tamanho da tela (75 seria o tamanho do botão mais 50 de margem)
-		setBounds(0, 0, width,  35 * (inputs.length + 1) + lblHeight + 75);
-
-		// Seta para a janela aparecer no meio da tela
-		setLocationRelativeTo(null);
-
-		// Deixa a janela visível
-		setVisible(true);
+		terminarJanela(width, inputs.length);
 	}
 	
 	//Métodos
@@ -76,10 +45,10 @@ public class MultiInputPane extends Pane {
 			Thread.sleep(100);
 		} catch(Exception e) {}
 		
-		Object[] vetor = coletarDados(pane, inputs.length, inputs);
-		
 		//Desenhando placeholders
 		pane.desenharPlaceholders();
+		
+		Object[] vetor = coletarDados(pane, inputs.length, inputs);
 		
 		//Retorna o vetor
 		return vetor;
@@ -153,7 +122,33 @@ public class MultiInputPane extends Pane {
 		return false;
 	}
 
-	private static void iniciarEdit(int i, Object[][] inputs) {
+	private void adicionarEdits(MultiInputPane pane, Object[][] inputs) {
+		
+		// Iniciando array
+		edits = new SmartField[inputs.length];
+
+		//Adicionando edits à janela
+		for (int i = 0; i < inputs.length; i++) {
+
+			//Obtendo caracteres permitidos
+			String caracteresPermitidos = "";
+					
+			iniciarEdit(i, inputs);
+					
+			SmartField edit = edits[i];
+
+			//Configurando posição do texto
+			edit.setHorizontalAlignment(SwingConstants.CENTER);
+					
+			//Arrumando posição e tamanho do edit
+			edit.setBounds(50, 35 * (i + 1) + lblHeight, width - 100, 25);
+
+			//Adicionando edit à janela
+			pane.add(edit);
+		}
+	}
+	
+	private void iniciarEdit(int i, Object[][] inputs) {
 		
 		//Verificando tipo
 		switch (inputs[i][1].toString().toUpperCase()) {
@@ -193,5 +188,20 @@ public class MultiInputPane extends Pane {
 				break;
 			}
 		}
+	}
+
+	private void terminarJanela(int width, int ilength) {
+		
+		//Adicionando botão para finalizar
+		add(new FinishButton(this, width, 35 * (ilength + 1) + lblHeight));
+				
+		//Arrumando tamanho da tela (75 seria o tamanho do botão mais 50 de margem)
+		setBounds(0, 0, width,  35 * (ilength + 1) + lblHeight + 75);
+
+		// Seta para a janela aparecer no meio da tela
+		setLocationRelativeTo(null);
+
+		// Deixa a janela visível
+		setVisible(true);
 	}
 }

@@ -232,6 +232,6 @@ public class Pane extends JDialog {
 
 	public static void main(String[] args) {
 
-		System.out.println(inputDouble("testeweeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", 0, 10));
+		System.out.println(inputDouble("teste", 0, 10));
 	}
 }
