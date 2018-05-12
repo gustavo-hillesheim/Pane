@@ -133,7 +133,7 @@ public class MultiInputPane extends Pane {
 			//Obtendo caracteres permitidos
 			String caracteresPermitidos = "";
 					
-			iniciarEdit(i, inputs);
+			iniciarEdit(edits[i], inputs[i]);
 					
 			SmartField edit = edits[i];
 
@@ -148,42 +148,46 @@ public class MultiInputPane extends Pane {
 		}
 	}
 	
-	private void iniciarEdit(int i, Object[][] inputs) {
+	private void iniciarEdit(SmartField edit, Object[] inputs) {
 		
 		//Verificando tipo
-		switch (inputs[i][1].toString().toUpperCase()) {
+		switch (inputs[1].toString().toUpperCase()) {
 			
 			case "STRING": {
 				
+				String placeholder = inputs[0].toString();
+				
 				//Verificando se foi passado uma parâmetro extra
-				if (inputs[i].length > 2) {
+				if (inputs.length > 2) {
+					
+					String caracteresPermitidos = inputs[2].toString();
 					
 					//Iniciando edit com caracteres permitidos personalizados
-					edits[i] = new SmartField(inputs[i][0].toString(), inputs[i][2].toString());
+					edit = new SmartField(placeholder, caracteresPermitidos);
 				} else {
 					
 					//Inciando edit padrão
-					edits[i] = new SmartField(inputs[i][0].toString());
+					edit = new SmartField(placeholder);
 				}
 			}
 			
 			default: {
 				
-				boolean decimal = inputs[i][1].toString().equals("DOUBLE") ? true : false;
+				boolean decimal = inputs[1].toString().equals("DOUBLE") ? true : false;
 				
 				//Verificando se foi passado mínimo e máximo para esse edit
-				if (inputs[i].length > 2) {
-					
+				if (inputs.length > 2) {
+				
 					//Atribuindo valores
-					double min = (double) inputs[i][2];
-					double max = (double) inputs[i][3];
+					double min = (double) inputs[2];
+					double max = (double) inputs[3];
 					
 					//Iniciando edit com limites personalizados
-					edits[i] = new SmartField(decimal, min, max);
+					edit = new SmartField(decimal, min, max);
 				} else {
 					
 					//Iniciando edit padrão
-					edits[i] = new SmartField(decimal);
+					edit = new SmartField(decimal);
 				}
 				break;
 			}

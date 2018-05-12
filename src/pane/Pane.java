@@ -6,6 +6,7 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 
 /*
  * Essa é a classe principal que possui todos os métodos utilizados para receber informações do usuário
@@ -171,8 +172,10 @@ public class Pane extends JDialog {
 		JLabel label = new JLabel();
 
 		// Seta o texto do label
-		label.setText("<html><p style=\"width:" + widthS + "; text-align:center;\">" + texto + "</p></html>");
+		label.setText("<html><p style=\"width:" + widthS + ";\">" + texto + "</p></html>");
 
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
 		// Pega a largura e altura do label
 		lblWidth = (int) label.getPreferredSize().getWidth();
 		lblHeight = (int) label.getPreferredSize().getHeight();
@@ -232,6 +235,6 @@ public class Pane extends JDialog {
 
 	public static void main(String[] args) {
 
-		System.out.println(inputDouble("teste", 0, 10));
+		System.out.println(input("teste"));
 	}
 }
