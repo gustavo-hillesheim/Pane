@@ -59,7 +59,6 @@ public class SmartField extends JTextField {
 		
 		//Definindo tamanho máximo
 		this.maxLength = maxLength;
-		System.out.println(maxLength);
 		
 		//Definindo tipo
 		this.tipo = "STRING";
@@ -68,23 +67,35 @@ public class SmartField extends JTextField {
 	//Construtor simples para inputs numérios
 	public SmartField(boolean decimal) {
 		
-		this(decimal, decimal ? Pane.DOUBLE_MIN : Pane.INT_MIN, decimal ? Pane.DOUBLE_MAX : Pane.INT_MAX);
+		this(decimal, 0, 0);
 	}
-	
+		
 	//Construtor para inputs numéricos com placeholder
 	public SmartField(boolean decimal, String placeholder) {
 		
-		this(decimal, placeholder, decimal ? Pane.DOUBLE_MAX : Pane.INT_MAX, decimal ? Pane.DOUBLE_MIN : Pane.INT_MIN);
+		this(decimal, placeholder, 0, 0, 0);
+	}
+	
+	//Construtor para inputs numéricos com placeholder e limite pós vírgula
+	public SmartField(boolean decimal, String placeholder, int maxLength) {
+		
+		this (decimal, placeholder, 0, 0, maxLength);
 	}
 	
 	//Construtor para inputs numéricos com limites
 	public SmartField(boolean decimal, double min, double max) {
 		
-		this(decimal, null, min, max);
+		this(decimal, null, min, max, 0);
 	}
 
+	//Construtor para inputs numéricos com limites e limite pós vírgula
+	public SmartField(boolean decimal, double min, double max, int maxLength) {
+		
+		this(decimal, null, min, max, maxLength);
+	}
+	
 	//Construtor para inputs numéricos com limites e placeholder
-	public SmartField(boolean decimal, String placeholder, double min, double max) {
+	public SmartField(boolean decimal, String placeholder, double min, double max, int maxLength) {
 		
 		//Construtor do JTextField
 		super();
@@ -95,6 +106,9 @@ public class SmartField extends JTextField {
 		//Definindo mínimo e máximo
 		this.min = min;
 		this.max = max;
+		
+		//Definindo tamanho máximo pós vírgula
+		this.maxLength = maxLength;
 		
 		//Definindo placeholder
 		this.placeholder = placeholder;
@@ -108,47 +122,43 @@ public class SmartField extends JTextField {
 		
 		char key = e.getKeyChar();
 		
-		//Definindo qual tipo de evento foi acionado
-		switch (e.getID()) {
+		if (e.getID() == KeyEvent.KEY_TYPED ) {
 			
-			case KeyEvent.KEY_TYPED: {	
+			//Verificando qual tecla foi digitada
+			if (key == KeyEvent.VK_BACK_SPACE) {
 				
-				//Verificando qual tecla foi digitada
-				if (key == KeyEvent.VK_BACK_SPACE) {
+				//Limpa a última casa do texto caso necessário
+				if (getText().length() > 0) {
+					setText(getText().substring(0, getText().length() - 1));
+				}
+				
+			//Adiciona o caractere ao TextField caso esteja na lista de caracteres permitidos
+			//Caso a lista esteja vazia, o método entende que podem ser colocadas quaisquer caracteres
+			} else {
+			
+				//Verificando tipo do TextField
+				if (!tipo.equals("STRING")) {
 					
-					//Limpa a última casa do texto caso necessário
-					if (getText().length() > 0) {
-						setText(getText().substring(0, getText().length() - 1));
-					}
+					processarTiposNumericos(String.valueOf(e.getKeyChar()));
 					
-				//Adiciona o caractere ao TextField caso esteja na lista de caracteres permitidos
-				//Caso a lista esteja vazia, o método entende que podem ser colocadas quaisquer caracteres
 				} else {
-				
-					//Verificando tipo do TextField
-					if (!tipo.equals("STRING")) {
+					
+					//Verificando se o caractere é permitido
+					if ((caracteresPermitidos.contains(String.valueOf(key))) || (caracteresPermitidos.equals(""))) {
 						
-						processarTiposNumericos(String.valueOf(e.getKeyChar()));
-						
-					} else {
-						
-						//Verificando se o caractere é permitido
-						if ((caracteresPermitidos.contains(String.valueOf(key))) || (caracteresPermitidos.equals(""))) {
+						//Verificando se o length máximo ainda não foi atingido ou se é livre
+						if ((getText().length() < maxLength) || (maxLength == 0)) {
 							
-							//Verificando se o length máximo ainda não foi atingido ou se é livre
-							if ((getText().length() < maxLength) || (maxLength == 0)) {
-								
-								setText(getText() + key);
-							}
+							setText(getText() + key);
 						}
 					}
 				}
+			}
+			
+			//Verifica se deve desenhar o placeholder
+			if (getText().isEmpty()) {
 				
-				//Verifica se deve desenhar o placeholder
-				if (getText().isEmpty()) {
-					
-					desenharPlaceholder();
-				}
+				desenharPlaceholder();
 			}
 		}
 	}
@@ -239,13 +249,6 @@ public class SmartField extends JTextField {
 
 	private void processarTiposNumericos(String key) {
 		
-		//Verificando se o campo está preenchido com um 0
-		if (getText().equals("0")) {
-			
-			//Limpa o campo
-			setText("");
-		}
-		
 		//Verificando se o caractere é um número
 		if ("0123456789".contains(key)) {
 			
@@ -254,6 +257,7 @@ public class SmartField extends JTextField {
 				
 				verificarLengthPosVirgula(key);
 			} else {
+				
 				setText(getText() + key);
 			}
 		} else {
@@ -268,13 +272,17 @@ public class SmartField extends JTextField {
 		
 		int index = getText().indexOf(".");
 		
-		//Verifica se já existe um . no texto
-		if (index != -1) {
+		//Verifica se já existe um . no texto e se existe um limite
+		//O objeto entende que 0 é sem limite
+		if ((index > -1) && (maxLength > 0)) {
 			
 			//Verifica se o tamanho máximo ainda não foi atingido
 			if ((getText().length() - (index + 1)) < maxLength) {
 				setText(getText() + key);
 			}
+		} else {
+			
+			setText(getText() + key);
 		}
 	}
 	
@@ -311,6 +319,11 @@ public class SmartField extends JTextField {
 			
 		} catch (Exception ex) {
 			
+			//Verificando se a última letra digitada é um ponto
+			if (getText().charAt(getText().length() - 1) == '.') {
+				return;
+			}
+			
 			//Define símbolos permitidos
 			String simbolosPermitidos = tipo.equals("DOUBLE") ? "-." : "-";
 			
@@ -326,18 +339,22 @@ public class SmartField extends JTextField {
 		
 		int n = Integer.parseInt(getText());
 		
-		//Verifica se o número está abaixo do mínimo aceito
-		if (n < min) {
+		//Verifica se precisa ajustar
+		if (min != max) {
 			
-			//Troca o conteúdo para o mínimo aceito
-			setText(String.valueOf((int)min));
-		}
-		
-		//Verifica se o número está acima do máximo aceito
-		if (n > max) {
+			//Verifica se o número está abaixo do mínimo aceito
+			if (n < min) {
+				
+				//Troca o conteúdo para o mínimo aceito
+				setText(String.valueOf((int)min));
+			}
 			
-			//Troca o conteúdo para o máximo aceito
-			setText(String.valueOf((int)max));
+			//Verifica se o número está acima do máximo aceito
+			if (n > max) {
+				
+				//Troca o conteúdo para o máximo aceito
+				setText(String.valueOf((int)max));
+			}
 		}
 	}
 
@@ -345,22 +362,26 @@ public class SmartField extends JTextField {
 		
 		double n = Double.parseDouble(getText());
 		
-		//Verifica se o número está abaixo do mínimo aceito
-		if (n < min) {
+		//Verifica se precisa ajustar
+		if (min != max) {
 			
-			//Troca o conteúdo para o mínimo aceito
-			setText(String.valueOf(min));
-		}
-		
-		//Verifica se o número está acima do máximo aceito
-		if (n > max) {
+			//Verifica se o número está abaixo do mínimo aceito
+			if (n < min) {
+				
+				//Troca o conteúdo para o mínimo aceito
+				setText(String.valueOf(min));
+			}
 			
-			//Troca o conteúdo para o máximo aceito
-			setText(String.valueOf(max));
+			//Verifica se o número está acima do máximo aceito
+			if (n > max) {
+				
+				//Troca o conteúdo para o máximo aceito
+				setText(String.valueOf(max));
+			}
 		}
 	}
 	
-	//Getters
+	//Getters e Setters
 	public double getDoubleText() {
 		
 		return Double.parseDouble(getText());

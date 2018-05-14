@@ -20,14 +20,26 @@ public class InputPane extends Pane {
 		this(titulo, texto, "");
 	}
 	
+	//Construtor com tamanho máximo
+	public InputPane(String titulo, String texto, int maxLength) {
+		
+		this(titulo, texto, "", Pane.RESIZE_AS_NEEDED, maxLength);
+	}
+	
 	//Construtor com caracteres permitidos personalizados
 	public InputPane(String titulo, String texto, String caracteresPermitidos) {
 		
-		this(titulo, texto, caracteresPermitidos, Pane.RESIZE_AS_NEEDED);
+		this(titulo, texto, caracteresPermitidos, Pane.RESIZE_AS_NEEDED, 0);
+	}
+	
+	//Construtor com caracteres permitidos e tamanho máximo personalizados
+	public InputPane(String titulo, String texto, String caracteresPermitidos, int maxLength) {
+		
+		this(titulo, texto, caracteresPermitidos, Pane.RESIZE_AS_NEEDED, maxLength);
 	}
 	
 	//Construtor com caracteres permitidos e largura personalizados
-	public InputPane(String titulo, String texto, String caracteresPermitidos, int width) {
+	public InputPane(String titulo, String texto, String caracteresPermitidos, int width, int maxLength) {
 		
 		// Construtor do pane
 		super(titulo, texto, width);
@@ -36,7 +48,7 @@ public class InputPane extends Pane {
 		this.width = (int) getBounds().getWidth();
 		
 		//Iniciando edit
-		edit = new SmartField(caracteresPermitidos);
+		edit = new SmartField(caracteresPermitidos, maxLength);
 		
 		terminarJanela();
 	}
@@ -125,6 +137,18 @@ public class InputPane extends Pane {
 		return pane.getEdit().getText();
 	}
 	
+	public static String input(String titulo, String texto, int maxLength) {
+		
+		//Cria janela
+		InputPane pane = new InputPane(titulo, texto, maxLength);
+		
+		//Espera o usuário terminar de usar a janela
+		esperaTerminar(pane);
+		
+		//Retorna valor inserido na janela
+		return pane.getEdit().getText();
+	}
+	
 	public static String input(String titulo, String texto, String caracteresPermitidos) {
 	
 		//Cria janela
@@ -137,10 +161,22 @@ public class InputPane extends Pane {
 		return pane.getEdit().getText();
 	}
 	
-	public static String input(String titulo, String texto, String caracteresPermitidos, int width) {
+	public static String input(String titulo, String texto, String caracteresPermitidos, int maxLength) {
+		
+		//Cria janela
+		InputPane pane = new InputPane(titulo, texto, caracteresPermitidos, maxLength);
+		
+		//Espera o usuário terminar de usar
+		esperaTerminar(pane);
+		
+		//Retorna o valor inserido na janela
+		return pane.getEdit().getText();
+	}
+	
+	public static String input(String titulo, String texto, String caracteresPermitidos, int width, int maxLength) {
 		
 		//Cria a janela
-		InputPane pane = new InputPane(titulo, texto, caracteresPermitidos, width);
+		InputPane pane = new InputPane(titulo, texto, caracteresPermitidos, width, maxLength);
 		
 		//Espera o usuário terminar de usar a janela
 		esperaTerminar(pane);
