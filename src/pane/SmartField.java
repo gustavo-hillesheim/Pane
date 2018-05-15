@@ -120,6 +120,10 @@ public class SmartField extends JTextField {
 		
 		//Definindo placeholder
 		this.placeholder = placeholder;
+	
+		//Definindo valor inicial do texto
+		String a = "" + (this.tipo.equals("DOUBLE") ? min : max);
+		setText(String.valueOf((int)min));
 		
 		//Adicionando administrador de foco
 		addFocusListener(new FocusListener() {
@@ -127,38 +131,42 @@ public class SmartField extends JTextField {
 			@Override
 			public void focusLost(FocusEvent e) {
 				
-				//Verificando se o tipo é numérico
-				if (!tipo.equals("STRING")) {
+				try {
 					
-					//Verificando se é decimal ou não
-					if (decimal) {
+					//Verificando se o tipo é numérico
+					if (!tipo.equals("STRING")) {
 						
-						//Verifica se o número inserido é menor que o mínimo
-						if (getDouble() < min) {
+						//Verificando se é decimal ou não
+						if (tipo.equals("DOUBLE")) {
 							
-							//Seta o texto como o mínimo
-							setText(String.valueOf(min));
+							//Verifica se o número inserido é menor que o mínimo
+							if (getDouble() < min) {
+								
+								//Seta o texto como o mínimo
+								setText(String.valueOf(min));
+								
+							//Verifica se o número inserido é maior que o mínimo
+							} else if (getDouble() > max) {
+								
+								setText(String.valueOf(max));
+							}
+						} else {
 							
-						//Verifica se o número inserido é maior que o mínimo
-						} else if (getDouble() > max) {
-							
-							setText(String.valueOf(max));
-						}
-					} else {
-						
-						//Verifica se o número inserido é menor que o mínimo
-						if (getInt() < min) {
-							
-							//Seta o texto como o mínimo
-							setText(String.valueOf(min));
-							
-						//Verifica se o número inserido é maior que o mínimo
-						} else if (getInt() > max) {
-							
-							setText(String.valueOf(max));
+							//Verifica se o número inserido é menor que o mínimo
+							if (getInt() < min) {
+								
+								//Seta o texto como o mínimo
+								setText(String.valueOf((int)min));
+								
+							//Verifica se o número inserido é maior que o mínimo
+							} else if (getInt() > max) {
+								
+								setText(String.valueOf((int)max));
+							}
 						}
 					}
-				}
+					
+				} catch(Exception ex) {}
 			}
 			
 			@Override

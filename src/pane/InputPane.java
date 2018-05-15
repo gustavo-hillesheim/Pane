@@ -160,6 +160,7 @@ public class InputPane extends Pane {
 	
 	public static Object input(String titulo, String texto, boolean decimal, int maxLength) {
 		
+		//Retorna o valor inserido na janela já convertido
 		return input(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, 0, 0, maxLength);
 	}
 	
@@ -171,6 +172,7 @@ public class InputPane extends Pane {
 	
 	public static Object input(String titulo, String texto, boolean decimal, double min, double max, int maxLength) {
 		
+		//Retorna o valor inserido na janela já convertido
 		return input(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, min, max, maxLength);
 	}
 	
@@ -189,7 +191,11 @@ public class InputPane extends Pane {
 		esperaTerminar(pane);
 		
 		//Retorna o valor inserido na janela já convertido
-		return decimal ? pane.getEdit().getDouble() : pane.getEdit().getInt();
+		if (decimal) {
+			return pane.getEdit().getDouble();
+		} else {
+			return pane.getEdit().getInt();
+		}
 	}
 	
 	// Getters e Setters

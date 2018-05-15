@@ -72,7 +72,7 @@ public class Pane extends JDialog {
 
 	public static int inputInt(String texto, int min, int max) {
 
-		return (int) InputPane.input("Entrada Inteira", texto, false, min, max);
+		return (Integer) InputPane.input("Entrada Inteira", texto, false, min, max);
 	}
 
 	public static int inputInt(String texto, String titulo, int width) {
@@ -249,6 +249,6 @@ public class Pane extends JDialog {
 
 	public static void main(String[] args) {
 
-		System.out.println(inputDouble("teste", 10, 20));
+		System.out.println(inputInt("teste", 10, 20));
 	}
 }
