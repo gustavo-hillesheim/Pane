@@ -122,8 +122,11 @@ public class SmartField extends JTextField {
 		this.placeholder = placeholder;
 	
 		//Definindo valor inicial do texto
-		String a = "" + (this.tipo.equals("DOUBLE") ? min : max);
-		setText(String.valueOf((int)min));
+		if (decimal) {
+			setText(String.valueOf(min));
+		} else {
+			setText(String.valueOf((int)min));
+		}
 		
 		//Adicionando administrador de foco
 		addFocusListener(new FocusListener() {
