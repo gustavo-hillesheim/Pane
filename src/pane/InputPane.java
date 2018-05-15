@@ -62,26 +62,17 @@ public class InputPane extends Pane {
 	//Construtor numérico com largura personalizada
 	public InputPane(String titulo, String texto, int width, boolean decimal) {
 		
-		//Construtor do pane
-		super(titulo, texto, width);
-		
-		//Re-setando variável width
-		this.width = (int) getBounds().getWidth();
-		
-		//Iniciando edit
-		edit = new SmartField(decimal);
-		
-		terminarJanela();
+		this(titulo, texto, width, decimal, 0, 0, 0);
 	}
 	
 	//Construtor numérico com limites personalizados
 	public InputPane(String titulo, String texto, boolean decimal, double min, double max) {
 		
-		this(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, min, max);
+		this(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, min, max, 0);
 	}
 	
-	//Construtor numérico com limites e largura personalizados
-	public InputPane(String titulo, String texto, int width, boolean decimal, double min, double max ) {
+	//Construtor numérico com limites, largura e tamanho máximo pós vírgula personalizados
+	public InputPane(String titulo, String texto, int width, boolean decimal, double min, double max, int maxLength) {
 		
 		//Construtor do pane
 		super(titulo, texto, width);
@@ -90,7 +81,7 @@ public class InputPane extends Pane {
 		this.width = (int) getBounds().getWidth();
 		
 		//Iniciando edit
-		edit = new SmartField(decimal, min, max);
+		edit = new SmartField(decimal, min, max, maxLength);
 		
 		terminarJanela();
 	}
@@ -127,50 +118,26 @@ public class InputPane extends Pane {
 	// Métodos
 	public static String input(String titulo, String texto) {
 		
-		//Cria janela
-		InputPane pane = new InputPane(titulo, texto);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
 		//Retorna valor inserido na janela
-		return pane.getEdit().getText();
+		return input(titulo, texto, 0);
 	}
 	
 	public static String input(String titulo, String texto, int maxLength) {
 		
-		//Cria janela
-		InputPane pane = new InputPane(titulo, texto, maxLength);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
 		//Retorna valor inserido na janela
-		return pane.getEdit().getText();
+		return input(titulo, texto, "", maxLength);
 	}
 	
 	public static String input(String titulo, String texto, String caracteresPermitidos) {
-	
-		//Cria janela
-		InputPane pane = new InputPane(titulo, texto, caracteresPermitidos);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
+
 		//Retorna o valor inserido na janela
-		return pane.getEdit().getText();
+		return input (titulo, texto, caracteresPermitidos, 0);
 	}
 	
 	public static String input(String titulo, String texto, String caracteresPermitidos, int maxLength) {
 		
-		//Cria janela
-		InputPane pane = new InputPane(titulo, texto, caracteresPermitidos, maxLength);
-		
-		//Espera o usuário terminar de usar
-		esperaTerminar(pane);
-		
 		//Retorna o valor inserido na janela
-		return pane.getEdit().getText();
+		return input(titulo, texto, caracteresPermitidos, Pane.RESIZE_AS_NEEDED, maxLength);
 	}
 	
 	public static String input(String titulo, String texto, String caracteresPermitidos, int width, int maxLength) {
@@ -187,54 +154,46 @@ public class InputPane extends Pane {
 	
 	public static Object input(String titulo, String texto, boolean decimal) {
 		
-		//Cria a janela
-		InputPane pane = new InputPane(titulo, texto, decimal);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
 		//Retorna o valor inserido na janela já convertido
-		return decimal ? pane.getEdit().getDoubleText() : pane.getEdit().getIntText();
+		return input(titulo, texto, decimal, 0, 0);
+	}
+	
+	public static Object input(String titulo, String texto, boolean decimal, int maxLength) {
+		
+		return input(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, 0, 0, maxLength);
 	}
 	
 	public static Object input(String titulo, String texto, boolean decimal, double min, double max) {
 		
-		//Cria uma janela
-		InputPane pane = new InputPane(titulo, texto, decimal, min, max);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
 		//Retorna o valor inserido na janela já convertido
-		return decimal ? pane.getEdit().getDoubleText() : pane.getEdit().getIntText();
+		return input(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, min, max, 0);
+	}
+	
+	public static Object input(String titulo, String texto, boolean decimal, double min, double max, int maxLength) {
+		
+		return input(titulo, texto, Pane.RESIZE_AS_NEEDED, decimal, min, max, maxLength);
 	}
 	
 	public static Object input(String titulo, String texto, int width, boolean decimal) {
 		
-		//Cria a janela
-		InputPane pane = new InputPane(titulo, texto, width, decimal);
-		
-		//Espera o usuário terminar de usar a janela
-		esperaTerminar(pane);
-		
 		//Retorna o valor inserido na janela já convertido
-		return decimal ? pane.getEdit().getDoubleText() : pane.getEdit().getIntText();
+		return input(titulo, texto, width, decimal, 0, 0, 0);
 	}
 	
-	public static Object input(String titulo, String texto, int width, boolean decimal, double min, double max) {
+	public static Object input(String titulo, String texto, int width, boolean decimal, double min, double max, int maxLength) {
 		
 		//Cria uma janela
-		InputPane pane = new InputPane(titulo, texto, width, decimal, min, max);
+		InputPane pane = new InputPane(titulo, texto, width, decimal, min, max, maxLength);
 		
 		//Espera o usuário terminar de usar a janela
 		esperaTerminar(pane);
 		
 		//Retorna o valor inserido na janela já convertido
-		return decimal ? pane.getEdit().getDoubleText() : pane.getEdit().getIntText();
+		return decimal ? pane.getEdit().getDouble() : pane.getEdit().getInt();
 	}
 	
 	// Getters e Setters
-	public SmartField getEdit() {
+	private SmartField getEdit() {
 		return this.edit;
 	}
 }

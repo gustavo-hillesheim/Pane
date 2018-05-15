@@ -11,6 +11,7 @@ import javax.swing.SwingConstants;
 /*
  * Essa é a classe principal que possui todos os métodos utilizados para receber informações do usuário
  * Também é a classe da qual as classes InputPane e MultiInputPane herdam a janela
+ * Herda da classe JDialog, o que faz com que pareça um JOptionPane
  */
 
 public class Pane extends JDialog {
@@ -62,9 +63,7 @@ public class Pane extends JDialog {
 
 	/*
 	 * Os métodos inputInt e inputDouble são usados para receber valores do tipo int
-	 * e double respectivamente A vantagem desse método, além da sintaxe
-	 * simplificada, é que é possível definir um valor mínimo e máximo para o número
-	 * informado pelo usuário
+	 * e double respectivamente, é possível definir um valor mínimo e máximo para o número
 	 */
 	public static int inputInt(String texto) {
 
@@ -84,7 +83,7 @@ public class Pane extends JDialog {
 	public static int inputInt(String texto, String titulo, int width, int min, int max) {
 
 		// Retorna o valor inserido na caixa de diálogo já convertido
-		return (int) InputPane.input(texto, titulo, width, false, min, max);
+		return (int) InputPane.input(texto, titulo, width, false, min, max, 0);
 	}
 
 	public static double inputDouble(String texto) {
@@ -92,11 +91,21 @@ public class Pane extends JDialog {
 		return (double) InputPane.input("Entrada Real", texto, true);
 	}
 
+	public static double inputDouble(String texto, int maxLength) {
+		
+		return (double) InputPane.input("Entrada Real", texto, true, maxLength);
+	}
+	
 	public static double inputDouble(String texto, double min, double max) {
 
 		return (double) InputPane.input("Entrada Real", texto, true, min, max);
 	}
 
+	public static double inputDouble(String texto, double min, double max, int maxLength) {
+		
+		return (double) InputPane.input("Entrada Real", texto, true, min, max, maxLength);
+	}
+	
 	public static double inputDouble(String texto, String titulo, int width) {
 
 		return (double) InputPane.input(titulo, texto, width, true);
@@ -105,9 +114,14 @@ public class Pane extends JDialog {
 	public static double inputDouble(String texto, String titulo, int width, double min, double max) {
 
 		// Retorna o valor inserido na caixa de diálogo já convertido
-		return (double) InputPane.input(titulo, texto, width, true, min, max);
+		return (double) InputPane.input(titulo, texto, width, true, min, max, 0);
 	}
 
+	public static double inputDouble(String texto, String titulo, int width, double min, double max, int maxLength) {
+		
+		return (double) InputPane.input(titulo, texto, width, true, min, max, maxLength);
+	}
+	
 	/*
 	 * O método inputMulti é usado para receber vários valores de diversos tipos de
 	 * uma única vez
@@ -144,7 +158,7 @@ public class Pane extends JDialog {
 
 		return MultiInputPane.input(titulo, texto, inputs, width);
 	}
-
+	
 	protected static void esperaTerminar(Pane pane) {
 
 		// Espera a janela terminar
@@ -235,6 +249,6 @@ public class Pane extends JDialog {
 
 	public static void main(String[] args) {
 
-		System.out.println(inputDouble("teste", 0, 10));
+		System.out.println(inputDouble("teste", 10, 20));
 	}
 }

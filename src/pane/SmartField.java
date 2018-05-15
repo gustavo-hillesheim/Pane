@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -70,6 +72,12 @@ public class SmartField extends JTextField {
 		this(decimal, 0, 0);
 	}
 		
+	//Construtor para inputs numéricos com limite pós vírgula
+	public SmartField(boolean decimal, int maxLength) {
+		
+		this(decimal, null, maxLength);
+	}
+	
 	//Construtor para inputs numéricos com placeholder
 	public SmartField(boolean decimal, String placeholder) {
 		
@@ -112,6 +120,53 @@ public class SmartField extends JTextField {
 		
 		//Definindo placeholder
 		this.placeholder = placeholder;
+		
+		//Adicionando administrador de foco
+		addFocusListener(new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				
+				//Verificando se o tipo é numérico
+				if (!tipo.equals("STRING")) {
+					
+					//Verificando se é decimal ou não
+					if (decimal) {
+						
+						//Verifica se o número inserido é menor que o mínimo
+						if (getDouble() < min) {
+							
+							//Seta o texto como o mínimo
+							setText(String.valueOf(min));
+							
+						//Verifica se o número inserido é maior que o mínimo
+						} else if (getDouble() > max) {
+							
+							setText(String.valueOf(max));
+						}
+					} else {
+						
+						//Verifica se o número inserido é menor que o mínimo
+						if (getInt() < min) {
+							
+							//Seta o texto como o mínimo
+							setText(String.valueOf(min));
+							
+						//Verifica se o número inserido é maior que o mínimo
+						} else if (getInt() > max) {
+							
+							setText(String.valueOf(max));
+						}
+					}
+				}
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	
 	//Sobrescrevendo método que trata os eventos acionados por teclas
@@ -162,7 +217,7 @@ public class SmartField extends JTextField {
 			}
 		}
 	}
-	
+
 	//Métodos
 	//Aparência
 	public void desenharPlaceholder() {
@@ -252,6 +307,12 @@ public class SmartField extends JTextField {
 		//Verificando se o caractere é um número
 		if ("0123456789".contains(key)) {
 			
+			//Verifica se o texto é 0
+			if (getText().equals("0")) {
+			
+				setText("");
+			}	
+			
 			//Verifica de qual tipo é o SmartField
 			if (tipo.equals("DOUBLE")) {
 				
@@ -259,6 +320,7 @@ public class SmartField extends JTextField {
 			} else {
 				
 				setText(getText() + key);
+				
 			}
 		} else {
 			
@@ -320,7 +382,7 @@ public class SmartField extends JTextField {
 		} catch (Exception ex) {
 			
 			//Verificando se a última letra digitada é um ponto
-			if (getText().charAt(getText().length() - 1) == '.') {
+			if (key.equals(".")) {
 				return;
 			}
 			
@@ -382,12 +444,12 @@ public class SmartField extends JTextField {
 	}
 	
 	//Getters e Setters
-	public double getDoubleText() {
+	public double getDouble() {
 		
 		return Double.parseDouble(getText());
 	}
 	
-	public int getIntText() {
+	public int getInt() {
 		
 		return Integer.parseInt(getText());
 	}
