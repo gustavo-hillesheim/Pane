@@ -142,30 +142,12 @@ public class SmartField extends JTextField {
 						//Verificando se é decimal ou não
 						if (tipo.equals("DOUBLE")) {
 							
-							//Verifica se o número inserido é menor que o mínimo
-							if (getDouble() < min) {
-								
-								//Seta o texto como o mínimo
-								setText(String.valueOf(min));
-								
-							//Verifica se o número inserido é maior que o mínimo
-							} else if (getDouble() > max) {
-								
-								setText(String.valueOf(max));
-							}
+							//Clampa
+							clampDouble();
 						} else {
 							
-							//Verifica se o número inserido é menor que o mínimo
-							if (getInt() < min) {
-								
-								//Seta o texto como o mínimo
-								setText(String.valueOf((int)min));
-								
-							//Verifica se o número inserido é maior que o mínimo
-							} else if (getInt() > max) {
-								
-								setText(String.valueOf((int)max));
-							}
+							//Clampa
+							clampInt();
 						}
 					}
 					
