@@ -8,6 +8,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextField;
@@ -19,6 +20,7 @@ import javax.swing.JTextField;
 public class SmartField extends JTextField {
 	
 	private static final long serialVersionUID = 1L;
+	private ArrayList<Integer> caracteresPressionados = new ArrayList<>();
 	private String caracteresPermitidos, placeholder, tipo;
 	private double min, max;
 	private int maxLength;
@@ -49,10 +51,10 @@ public class SmartField extends JTextField {
 	
 	//Construtor com placeholder, caracteres permitidos e tamanho máximo personalizados
 	public SmartField(String placeholder, String caracteresPermitidos, int maxLength) {
-			
+	
 		//Construtor do JTextField
 		super();
-			
+		
 		//Definindo placeholder
 		this.placeholder = placeholder;
 			
@@ -160,55 +162,7 @@ public class SmartField extends JTextField {
 				
 			}
 		});
-	}
 	
-	//Sobrescrevendo método que trata os eventos acionados por teclas
-	@Override
-	protected void processKeyEvent(KeyEvent e) {
-		
-		atualizarListeners(e);
-		
-		char key = e.getKeyChar();
-		
-		if (e.getID() == KeyEvent.KEY_TYPED ) {
-			
-			//Verificando qual tecla foi digitada
-			if (key == KeyEvent.VK_BACK_SPACE) {
-				
-				//Limpa a última casa do texto caso necessário
-				if (getText().length() > 0) {
-					setText(getText().substring(0, getText().length() - 1));
-				}
-				
-			//Adiciona o caractere ao TextField caso esteja na lista de caracteres permitidos
-			//Caso a lista esteja vazia, o método entende que podem ser colocadas quaisquer caracteres
-			} else {
-			
-				//Verificando tipo do TextField
-				if (!tipo.equals("STRING")) {
-					
-					processarTiposNumericos(String.valueOf(e.getKeyChar()));
-					
-				} else {
-					
-					//Verificando se o caractere é permitido
-					if ((caracteresPermitidos.contains(String.valueOf(key))) || (caracteresPermitidos.equals(""))) {
-						
-						//Verificando se o length máximo ainda não foi atingido ou se é livre
-						if ((getText().length() < maxLength) || (maxLength == 0)) {
-							
-							setText(getText() + key);
-						}
-					}
-				}
-			}
-			
-			//Verifica se deve desenhar o placeholder
-			if (getText().isEmpty()) {
-				
-				desenharPlaceholder();
-			}
-		}
 	}
 
 	//Métodos
@@ -266,6 +220,56 @@ public class SmartField extends JTextField {
 	}
 
 	//Funcionalidade
+	//Sobrescrevendo método que trata os eventos acionados por teclas
+	@Override
+	protected void processKeyEvent(KeyEvent e) {
+		
+		atualizarListeners(e);
+		
+		if (caracteresPressionados.size() > 1) {
+			multiplasTeclas();
+		}
+		
+		char key = e.getKeyChar();
+		
+		if (e.getID() == KeyEvent.KEY_TYPED ) {
+			
+			//Verificando qual tecla foi digitada
+			if (key == KeyEvent.VK_BACK_SPACE) {
+				
+				processarBackSpace();
+				
+			//Adiciona o caractere ao TextField caso esteja na lista de caracteres permitidos
+			//Caso a lista esteja vazia, o método entende que podem ser colocadas quaisquer caracteres
+			} else {
+			
+				//Verificando tipo do TextField
+				if (!tipo.equals("STRING")) {
+					
+					processarTiposNumericos(String.valueOf(e.getKeyChar()));
+					
+				} else {
+					
+					//Verificando se o caractere é permitido
+					if ((caracteresPermitidos.contains(String.valueOf(key))) || (caracteresPermitidos.equals(""))) {
+						
+						//Verificando se o length máximo ainda não foi atingido ou se é livre
+						if ((getText().length() < maxLength) || (maxLength == 0)) {
+							
+							setText(getText() + key);
+						}
+					}
+				}
+			}
+			
+			//Verifica se deve desenhar o placeholder
+			if (getText().isEmpty()) {
+				
+				desenharPlaceholder();
+			}
+		}
+	}
+
 	private void atualizarListeners(KeyEvent e) {
 		
 		//Obtendo lista de keyListeners
@@ -276,6 +280,10 @@ public class SmartField extends JTextField {
 			switch(e.getID()) {
 			
 				case KeyEvent.KEY_PRESSED: {
+					
+					if (!caracteresPressionados.contains(e.getKeyCode())) {
+						caracteresPressionados.add(e.getKeyCode());
+					}
 					
 					listener.keyPressed(e);
 					break;
@@ -288,6 +296,15 @@ public class SmartField extends JTextField {
 				
 				case KeyEvent.KEY_RELEASED: {
 					
+					if (caracteresPressionados.contains(e.getKeyCode())) {
+						
+						int index = indexCaracter(e.getKeyCode());
+						
+						if (index > -1) {
+							caracteresPressionados.remove(index);
+						}
+					}
+					
 					listener.keyReleased(e);
 					break;
 				}
@@ -295,6 +312,91 @@ public class SmartField extends JTextField {
 		}
 	}
 
+	private int indexCaracter(int ch) {
+		
+		for (int caractere : caracteresPressionados) {
+			
+			if (caractere == ch) {
+				
+				return caracteresPressionados.indexOf(caractere);
+			}
+		}
+		
+		return -1;
+	}
+	
+	private void multiplasTeclas() {
+		
+		switch (caracteresPressionados.get(0)) {
+		
+			case KeyEvent.VK_CONTROL: {
+				
+				switch (caracteresPressionados.get(1)) {
+				
+					case KeyEvent.VK_A: {
+
+						selectAll();
+					}
+				}
+			}
+		}
+		
+	}
+	
+	private void processarBackSpace() {
+		
+		//Verificando se não há nenhum texto selecionado
+		if (getSelectedText() == null) {
+			
+			//Verifica se existe algo escrito
+			if (getText().length() > 0) {
+				
+				//Retira última casa do texto atual
+				String novoTexto = getText().substring(0, getText().length() - 1);
+				setText(novoTexto);
+			}
+		} else {
+			
+			retirarDoTexto(getSelectedText());
+		}
+	}
+
+	private void retirarDoTexto(String texto) {
+		
+		//Encontra o começo e fim do texto
+		int[] bounds = encontrarNoTexto(texto, getCaretPosition());
+		
+		//Separa o conteúdo do campo no texto
+		String parte1 = getText().substring(0, bounds[0]);
+		String parte2 = getText().substring(bounds[1], getText().length());
+			
+		//Seta texto
+		setText(parte1 + parte2);
+			
+		//Seta posição da barra de texto
+		setCaretPosition(parte1.length());
+	}
+	
+	private int[] encontrarNoTexto(String texto, int caretPos) {
+		
+		int[] bounds = new int[2];
+		
+		//Calcula o começo e o fim do texto selecionado
+		if (caretPos - texto.length() >= 0) {
+			
+			bounds[0] = caretPos - texto.length();
+			bounds[1] = caretPos;
+		} else {
+			
+			bounds[0] = caretPos;
+			bounds[1] = caretPos + texto.length();
+		}
+		
+		//Retorno
+		return bounds;
+		
+	}
+	
 	private void processarTiposNumericos(String key) {
 		
 		//Verificando se o caractere é um número
@@ -312,7 +414,14 @@ public class SmartField extends JTextField {
 				verificarLengthPosVirgula(key);
 			} else {
 				
-				setText(getText() + key);
+				//Verifica se o texto inserido no campo é igual ao mínimo
+				if (!getText().equals(String.valueOf((int)min))) {
+					
+					setText(getText() + key);
+				} else {
+					
+					setText(key);
+				}
 				
 			}
 		} else {
@@ -337,14 +446,24 @@ public class SmartField extends JTextField {
 			}
 		} else {
 			
-			setText(getText() + key);
+			//Verifica se o texto inserido no campo é igual ao mínimo
+			if (!getText().equals(String.valueOf(min))) {
+				
+				setText(getText() + key);
+			} else {
+				
+				setText(key);
+			}
 		}
 	}
 	
 	private void processarSimbolos(String key) {
 		
-		//Verificando se o símbolo já está no TextField
-		if (!getText().contains(key)) {
+		//Define símbolos permitidos
+		String simbolosPermitidos = this.tipo.equals("DOUBLE") ? "-." : "-";
+		
+		//Verificando se o símbolo já está no TextField e se é símbolo permitido
+		if ((!getText().contains(key)) && (simbolosPermitidos.contains(key))) {
 			
 			//Verificando se o símbolo é o sinal de menos
 			if (key.charAt(0) == KeyEvent.VK_MINUS) {
@@ -439,10 +558,14 @@ public class SmartField extends JTextField {
 	//Getters e Setters
 	public double getDouble() {
 		
+		clampDouble();
+		
 		return Double.parseDouble(getText());
 	}
 	
 	public int getInt() {
+		
+		clampInt();
 		
 		return Integer.parseInt(getText());
 	}
