@@ -246,9 +246,4 @@ public class Pane extends JDialog {
 	protected int getEstado() {
 		return this.estado;
 	}
-	
-	public static void main(String[] args) {
-		
-		inputInt("teste", 5, 10);
-	}
 }
